@@ -38,7 +38,7 @@ async function startTicketing(numberPerson, userId, pw) {
     await page.waitForSelector("#contents");
   
     // save cookie
-    const cookies = await page.cookies();
+    let cookies = await page.cookies();
   
     // load cookie
     await page.setCookie(...cookies);
@@ -49,14 +49,20 @@ async function startTicketing(numberPerson, userId, pw) {
     await page.goto(gameUrl);
   
     // if exsited popup -> close
-    const popupCloseBut =
+    const popupCloseBut1 =
       "#div_checkDontsee_PT002_4_1 > div.popupInput > button.btn.btnClose";
-  
-    const closeButElement = await page.$(popupCloseBut);
-    if (closeButElement != null) {
-      await page.click(popupCloseBut);
+    const closeButElement1 = await page.$(popupCloseBut1);
+    if (closeButElement1 != null) {
+      await page.click(popupCloseBut1);
     }
-  
+
+    // const popupCloseBut2 =
+    //   "#div_checkDontsee_PT002_5_2 > div.popupInput > button.btn.btnClose";
+    // const closeButElement2 = await page.$(popupCloseBut2);
+    // if (closeButElement2 != null) {
+    //   await page.click(popupCloseBut2);
+    // }
+
     /**
      * 
     //   예매 오픈 시간까지 기다리기
@@ -95,54 +101,57 @@ async function startTicketing(numberPerson, userId, pw) {
   
     const buttonSelector =
       "div.timeScheduleList > div.timeSchedule.lineColor_Y > div.btns   > a.BtnColor_Y.btn1";
-    page.click(buttonSelector);
+    await page.click(buttonSelector);
     const newPagePromise = await new Promise((x) => page.once("popup", x));
     await log.addLog("예매하기 버튼 클릭 성공");
-    await page.setViewport({ width: 1080, height: 1024 });
+    await page.setViewport({ width: 1080, height: 1600 });
     page = await newPagePromise;
+
+    // const seatButton = await page.$(".groundList > div.list>a[sgn=3루 2층 테이블석(원정팀)]")
+    // const seatButton = await page.evaluate('document.querySelector(".groundList > div.list>a[sgn=3루 2층 테이블석(원정팀)]")')
+    // await log.addErrorLog(seatButton)
+    // await page.click(seatButton)
   
-    return;
   
     // 새창
     await page.waitForSelector("#divBookSeat");
     let iframeWindow = await page.$('iframe[id="ifrmSeat"]');
   
     frame = await iframeWindow.contentFrame();
+    const seat = await  frame.$$('a[sgn=3루 2층 테이블석(원정팀)]")')
+    await log.addLog(seat)
+alert(JSON.stringify(seat))
+    // // 잠깐 접어두기 클릭
+    // await Promise.all([
+    //   await frame.waitForSelector("#divCaptchaFolding > a"),
+    //   await frame.click("#divCaptchaFolding > a"),
+    // ]);
   
-    // 잠깐 접어두기 클릭
-    await Promise.all([
-      await frame.waitForSelector("#divCaptchaFolding > a"),
-      await frame.click("#divCaptchaFolding > a"),
-    ]);
-  
-    // 좌석 선택
-    await frame.waitForSelector("#ifrmSeatDetail");
-    iframeWindow = await frame.$('iframe[id="ifrmSeatDetail"]');
-    let datailFrame = await iframeWindow.contentFrame();
+    return
   
     // 직접 구역 누르고
     // GetBlockSeatList('', '', '016');
     // #TmgsTable > tbody > tr > td > map > area:nth-child(16)
   
     // #divSeatBox 나오면 자동으로 좌석 클릭
-    await datailFrame.waitForSelector("#divSeatBox");
-    const seatArr = await datailFrame.$$('span[class="SeatN"]');
+    // await datailFrame.waitForSelector("#divSeatBox");
+    // const seatArr = await datailFrame.$$('span[class="SeatN"]');
   
-    for (let index = 0; index < numberPerson; index++) {
-      if (index + 1 > seatArr.length) {
-        log.addErrorLog(
-          "잔여좌석 " +
-            seatArr.length +
-            "개로 " +
-            numberPerson -
-            seatArr.length +
-            "개의 좌석은 잡지 못했습니다."
-        );
-        break;
-      }
-      await seatArr[index].click();
-      await log.addLog("select seat");
-    }
+    // for (let index = 0; index < numberPerson; index++) {
+    //   if (index + 1 > seatArr.length) {
+    //     log.addErrorLog(
+    //       "잔여좌석 " +
+    //         seatArr.length +
+    //         "개로 " +
+    //         numberPerson -
+    //         seatArr.length +
+    //         "개의 좌석은 잡지 못했습니다."
+    //     );
+    //     break;
+    //   }
+    //   await seatArr[index].click();
+    //   await log.addLog("select seat");
+    // }
   
     // 좌석 선택 완료 버튼 클릭
     await frame.click(
